@@ -1,28 +1,9 @@
 <?php
 declare(strict_types=1);
-
 require dirname(__DIR__) . '/config/bootstrap.php';
-
-header('Content-Type: text/html; charset=utf-8');
-?>
-<!doctype html>
-<html lang="en">
-<head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title><?= htmlspecialchars($config['app_name'], ENT_QUOTES, 'UTF-8') ?></title>
-<style>
-body{font-family:system-ui,-apple-system,sans-serif;margin:0;background:#f5f7fb;color:#172033}.wrap{max-width:1100px;margin:60px auto;padding:24px}.card{background:#fff;border:1px solid #e5e7eb;border-radius:16px;padding:28px;box-shadow:0 8px 30px rgba(0,0,0,.05)}h1{margin-top:0}.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:16px}.item{padding:18px;border:1px solid #e5e7eb;border-radius:12px}.ok{font-weight:700}
-</style>
-</head>
-<body><main class="wrap"><section class="card">
-<h1>ResellNom Domain Platform</h1>
-<p class="ok">Application foundation is online.</p>
-<div class="grid">
-<div class="item"><strong>Multi-Registrar</strong><br>Wix, Namecheap & future adapters</div>
-<div class="item"><strong>Reseller Hierarchy</strong><br>Admin → Reseller → Sub-Reseller → Client</div>
-<div class="item"><strong>Domain Lifecycle</strong><br>Register, Transfer, Renewal, Restore</div>
-<div class="item"><strong>DNS</strong><br>Records and nameserver management</div>
-<div class="item"><strong>WHMCS</strong><br>Unified API/module foundation</div>
-<div class="item"><strong>Security</strong><br>PDO prepared queries, CSRF and audit foundation</div>
-</div></section></main></body></html>
+require dirname(__DIR__) . '/app/Auth/Auth.php';
+use ResellNom\Auth\Auth;
+$auth = new Auth(db());
+$user = $auth->user();
+if (!$user) { header('Location: /login.php'); exit; }
+?><!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Dashboard · ResellNom</title><style>body{font-family:system-ui;margin:0;background:#f5f7fb;color:#111827}.nav{background:#111827;color:white;padding:18px 5%;display:flex;justify-content:space-between}.wrap{max-width:1100px;margin:35px auto;padding:0 20px}.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:18px}.card{background:white;padding:22px;border-radius:14px;box-shadow:0 5px 20px #0001}.muted{color:#6b7280}.badge{display:inline-block;padding:5px 9px;border-radius:999px;background:#e5e7eb;color:#111;font-size:12px;font-weight:700}</style></head><body><nav class="nav"><strong>ResellNom</strong><span><?=htmlspecialchars($user['name']??$user['email'],ENT_QUOTES,'UTF-8')?> · <span class="badge"><?=htmlspecialchars($user['role'],ENT_QUOTES,'UTF-8')?></span></span></nav><main class="wrap"><h1>Dashboard</h1><p class="muted">Welcome to your domain reseller platform.</p><section class="grid"><div class="card"><h3>Wallet</h3><h2><?=number_format((float)$user['balance'],2)?></h2><p class="muted">Available credit</p></div><div class="card"><h3>Domains</h3><p>Search, register, transfer and renew domains.</p></div><div class="card"><h3>DNS</h3><p>Nameservers and DNS record management.</p></div><?php if(in_array($user['role'],['admin','reseller','sub_reseller'],true)): ?><div class="card"><h3>Customers</h3><p>Manage downstream accounts and access.</p></div><?php endif; ?><?php if($user['role']==='admin'): ?><div class="card"><h3>Admin</h3><p>Registrars, TLD pricing, promotions, users and audit logs.</p></div><?php endif; ?></section></main></body></html>
