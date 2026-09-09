@@ -38,7 +38,8 @@ CREATE TABLE tld_prices (
 
 CREATE TABLE promotions (
  id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
- code VARCHAR(50) NOT NULL UNIQUE,
+ code VARCHAR(50) NOT NULL,
+ registrar_id BIGINT UNSIGNED NULL,
  tld VARCHAR(63) NULL,
  action ENUM('register','transfer','renewal','all') NOT NULL DEFAULT 'all',
  discount_type ENUM('fixed','percent') NOT NULL,
@@ -46,7 +47,10 @@ CREATE TABLE promotions (
  starts_at DATETIME NULL,
  ends_at DATETIME NULL,
  usage_limit INT NULL,
- status ENUM('active','disabled') NOT NULL DEFAULT 'active'
+ status ENUM('active','disabled') NOT NULL DEFAULT 'active',
+ UNIQUE KEY uq_promo_registrar_code(registrar_id,code),
+ INDEX idx_promo_registrar_status(registrar_id,status),
+ FOREIGN KEY (registrar_id) REFERENCES registrars(id) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 CREATE TABLE domains (
