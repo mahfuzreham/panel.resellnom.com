@@ -6,4 +6,5 @@
 /storage/cache/*
 /storage/sessions/*
 *.log
+config/config.local.php
 .DS_Store
