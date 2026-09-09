@@ -14,11 +14,13 @@ if (session_status() !== PHP_SESSION_ACTIVE) {
     session_start();
 }
 
-function db(array $config): PDO {
+function db(?array $connectionConfig = null): PDO {
+    global $config;
+    $connectionConfig ??= $config;
     static $pdo;
     if ($pdo instanceof PDO) return $pdo;
-    $dsn = sprintf('mysql:host=%s;port=%d;dbname=%s;charset=%s', $config['database']['host'], $config['database']['port'], $config['database']['name'], $config['database']['charset']);
-    $pdo = new PDO($dsn, $config['database']['user'], $config['database']['password'], [
+    $dsn = sprintf('mysql:host=%s;port=%d;dbname=%s;charset=%s', $connectionConfig['database']['host'], $connectionConfig['database']['port'], $connectionConfig['database']['name'], $connectionConfig['database']['charset']);
+    $pdo = new PDO($dsn, $connectionConfig['database']['user'], $connectionConfig['database']['password'], [
         PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
         PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
         PDO::ATTR_EMULATE_PREPARES => false,
@@ -32,5 +34,9 @@ function csrf_token(): string {
 }
 
 function verify_csrf(string $token): bool {
-    return isset($_SESSION['_csrf']) && hash_equals($_SESSION['_csrf'], $token);
+    if (!isset($_SESSION['_csrf']) || !hash_equals($_SESSION['_csrf'], $token)) {
+        http_response_code(419);
+        throw new RuntimeException('Invalid security token. Please reload the page and try again.');
+    }
+    return true;
 }
