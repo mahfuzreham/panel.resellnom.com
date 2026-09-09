@@ -1,0 +1,10 @@
+Options -Indexes
+
+RewriteEngine On
+
+# Never expose application, configuration, or database source directories.
+RewriteRule ^(?:app|config|database)(?:/|$) - [F,L]
+
+# Serve the public web root while keeping application files outside the web root.
+RewriteRule ^$ public/index.php [L]
+RewriteRule ^(.+)$ public/$1 [L]
